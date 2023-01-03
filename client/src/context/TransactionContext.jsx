@@ -3,10 +3,13 @@ import { ethers } from "ethers";
 
 import { contractABI, contractAddress } from "../utils/constants";
 
+// Create useContext
 export const TransactionContext = React.createContext();
 
+// Get Window_Info
 const { ethereum } = window;
 
+// Get Contract
 const getEthereumContract = () => {
   const provider = new ethers.providers.Web3Provider(ethereum);
   const signer = provider.getSigner();
@@ -15,6 +18,7 @@ const getEthereumContract = () => {
   return transactionsContract;
 }
 
+// Provide transaction details
 export const TransactionProvider = ({ children }) => {
   const [currentAccount, setCurrentAccount] = useState("");
   const [formData, setFormData] = useState({ addressTo: "", amount: "", keyword: "", message: "" });
@@ -22,16 +26,22 @@ export const TransactionProvider = ({ children }) => {
   const [transactionCount, setTransactionCount] = useState(localStorage.getItem("transactionCount"));
   const [transactions, setTransactions] = useState([])
 
+  // Update Form_info contents
   const handleChange = (e, name) => {
     setFormData((prevState) => ({ ...prevState, [name]: e.target.value }));
   };
 
+  // Get All Transacitons
   const getAllTransactions = async () => {
+    // Processes that may generate exception errors
     try {
       if (!ethereum) return alert("Please install MetaMask.");
+      // Get Contract
       const transactionsContract = getEthereumContract();
+      // Available Transactions
       const availableTransactions = await transactionsContract.getAllTransactions();
 
+      // Mapping transaction_Info
       const structuredTransactions = availableTransactions.map((transaction) => ({
         addressTo: transaction.receiver,
         addressFrom: transaction.sender,
@@ -42,15 +52,20 @@ export const TransactionProvider = ({ children }) => {
       }));
       console.log(structuredTransactions)
       setTransactions(structuredTransactions);
+
+      // Process to be executed when an exception error occurs
     } catch (error) {
       console.log(error);
     }
   }
 
+  // Check Wallet Connect
   const checkIfWalletIsConnected = async () => {
+    // Processes that may generate exception errors
     try {
       if (!ethereum) return alert("Please install MetaMask.");
 
+      // Get Wallet Accounts
       const accounts = await ethereum.request({ method: "eth_accounts" });
 
       if (accounts.length) {
@@ -60,6 +75,8 @@ export const TransactionProvider = ({ children }) => {
       } else {
         console.log("No accounts found");
       }
+
+      // Process to be executed when an exception error occurs
       } catch (error) {
         console.log(error);
         
@@ -68,10 +85,11 @@ export const TransactionProvider = ({ children }) => {
   }
 
   const checkIfTransactionsExist = async () => {
+    // Processes that may generate exception errors
     try {
       const transactionsContract = getEthereumContract();
       const transactionCount = await transactionsContract.getTransactionCount();
-
+      // Save Transaction Count Info
       window.localStorage.setItem("transactionCount",  transactionCount)
     } catch (error){
       console.log(error);
@@ -80,13 +98,17 @@ export const TransactionProvider = ({ children }) => {
     }
   }
 
+  // Connect Wallet
   const connectWallet = async () => {
+    // Processes that may generate exception errors
     try {
       if (!ethereum) return alert("Please install metamask.");
 
       const accounts = await ethereum.request({ method: "eth_requestAccounts", });
 
       setCurrentAccount(accounts[0]);
+
+      // Process to be executed when an exception error occurs
     } catch (error) {
       console.log(error);
 
@@ -94,11 +116,13 @@ export const TransactionProvider = ({ children }) => {
     }
   }
 
+  // Send Transaction
   const sendTransaction = async () => {
+    // Processes that may generate exception errors
     try {
       if(!ethereum) return alert("Please install metamask");
 
-      // ge the data from the form...
+      // ge the data from the Form...
       const { addressTo, amount, keyword, message } = formData;
       const transactionsContract = getEthereumContract();
       const parsedAmount = ethers.utils.parseEther(amount);
@@ -126,6 +150,8 @@ export const TransactionProvider = ({ children }) => {
       setTransactionCount(transactionCount.toNumber());
 
       window.reload()
+
+      // Process to be executed when an exception error occurs
     } catch (error) {
       console.log(error);
       

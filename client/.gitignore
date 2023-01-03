@@ -27,3 +27,4 @@ dist-ssr
 #Hardhat files
 cache
 artifacts
+constants.js
